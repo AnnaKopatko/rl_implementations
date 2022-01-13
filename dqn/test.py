@@ -5,11 +5,11 @@ import torch
 
 def test():
     env = gym.make('CartPole-v1')
-    agent = DQN_agent(env, 12)
-
+    agent = DQN_agent(env, 48)
+    num_tests = 1
     agent.main_network.load_state_dict(torch.load('/home/anna/PycharmProjects/rl_implementations/dqn/CartPole_weights'))
 
-    for i_episode in range(1):
+    for i_episode in range(num_tests):
         observation = env.reset()
         done = False
         t = 0

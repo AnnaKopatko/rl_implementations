@@ -4,13 +4,16 @@ from tqdm import tqdm
 import torch
 import plotly.express as px
 import numpy as np
+import pandas as pd
 
 def train():
     target_update = 50
     env = gym.make('CartPole-v1')
-    agent = DQN_agent(env, 12)
-    num_episodes = 500
+    agent = DQN_agent(env, 24)
+    num_episodes = 1000
     rewards = []
+    average_score = []
+    epsilons = []
     for i in tqdm(range(num_episodes)):
         state = env.reset()
         state = torch.Tensor(state)
@@ -28,17 +31,20 @@ def train():
             agent.learn()
             state = next_state
         rewards.append(reward_iter)
+        average_score.append(np.mean(rewards[-100:]))
 
         if i %target_update==0:
             agent.target_network.load_state_dict(agent.main_network.state_dict())
 
         agent.eps = max(0.001 + (1 - 0.001) * np.exp(-agent.eps_decay *i), agent.end_eps)
+        epsilons.append(agent.eps)
 
     torch.save(agent.main_network.state_dict(),
                '/home/anna/PycharmProjects/rl_implementations/dqn/CartPole_weights')
-    fig = px.line(x=range(len(rewards)), y=rewards)
+    d = {'Rewards': rewards, 'Average rewards': average_score, 'epsilon': epsilons}
+    df = pd.DataFrame(data=d)
+    fig = px.line(df, x=df.index, y=['Rewards', 'Average rewards', 'epsilon'], title="DQN on CartPole problem")
     fig.show()
-
 
 
 
